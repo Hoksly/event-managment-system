@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using crm_minimal.Data;
+using crm_minimal.Data.Dao;
 using crm_minimal.Models;
 
 namespace crm_minimal.Controllers
@@ -9,18 +10,26 @@ namespace crm_minimal.Controllers
     [ApiController]
     public class EventsController : ControllerBase
     {
-        private readonly ApplicationManagementContext _context;
-
-        public EventsController(ApplicationManagementContext context)
+        private readonly IEventDao _eventDao;
+        public EventsController(IEventDao eventDao)
         {
-            _context = context;
+            _eventDao = eventDao;
         }
 
         // GET: api/Events
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
         {
-            return await _context.Events.ToListAsync();
+            try
+            {
+                var events = await _eventDao.GetAllEvents(); 
+                return Ok(events);  
+            } 
+            catch (Exception ex)
+            {
+                // Log the error
+                return StatusCode(500, "Internal server error."); 
+            }
         }
         
         
@@ -28,70 +37,118 @@ namespace crm_minimal.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEventById(int id)
         {
-            var eventItem = await _context.Events.FindAsync(id);
-            
-            if (eventItem == null)
+            try
             {
-                return NotFound("No such event exists.");
+                var eventItem = await _eventDao.GetEventById(id);
+
+                if (eventItem == null)
+                {
+                    return NotFound(); // Use the built-in NotFound helper
+                }
+
+                return Ok(eventItem);  // Use Ok for successful responses with data
             }
-            return eventItem;
+        
+            catch (Exception ex)
+            {
+                // Log the unexpected exception for debugging
+                return StatusCode(500, "An error occurred while processing your request: " + ex.Message);
+            }
         }
+
 
         // GET: api/Events/name?eventName=SomeEventName
         [HttpGet("name")]
         public async Task<ActionResult<IEnumerable<Event>>> GetEventsByName(string eventName)
         {
-            return await _context.Events
-                .Where(e => e.Title.Contains(eventName)) 
-                .ToListAsync(); 
+            if (string.IsNullOrWhiteSpace(eventName))
+            {
+                return BadRequest("Search term cannot be empty.");
+            }
+
+            try 
+            {
+                return Ok(await _eventDao.GetEventsByName(eventName));
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                return StatusCode(500, "An error occurred while processing your request: " + ex.Message);
+            }
         }
+
 
         // GET: api/Events/description?desc=SomeDescription
         [HttpGet("description")]
         public async Task<ActionResult<IEnumerable<Event>>> GetEventsByDescription(string desc)
         {
-            return await _context.Events
-                .Where(e => e.Description.Contains(desc)) 
-                .ToListAsync(); 
+            if (string.IsNullOrWhiteSpace(desc))
+            {
+                return BadRequest("Search term cannot be empty.");
+            }
+
+            try 
+            {
+                return Ok(await _eventDao.GetEventsByDescription(desc));
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                return StatusCode(500, "An error occurred while processing your request: " + ex.Message);
+            }
         }
 
         // GET: api/Events/search?q=SomeSearchTerm
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<Event>>> SearchEvents(string q)
         {
-            // More flexible search across title, description, etc.
-            // Might involve LIKE or full-text search depending on your needs
-            return await _context.Events
-                .Where(e => e.Title.Contains(q) || e.Description.Contains(q))
-                .ToListAsync(); 
+            if (string.IsNullOrWhiteSpace(q))
+            {
+                return BadRequest("Search term cannot be empty.");
+            }
+
+            try 
+            {
+                return Ok(await _eventDao.SearchEvents(q));
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                return StatusCode(500, "An error occurred while processing your request: " + ex.Message);
+            }
         }
         
         [HttpPost]
         public async Task<ActionResult<Event>> PostEvent(Event eventData)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState); 
+                var newEvent = await _eventDao.CreateEvent(eventData);
+                return CreatedAtAction(nameof(GetEventById), new { id = newEvent.Id }, newEvent);
             }
-
-            _context.Events.Add(eventData);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetEventById", new { id = eventData.Id }, eventData); 
+            catch (Exception ex)
+            {
+                // Log the error
+                return StatusCode(500, "An error occurred while processing your request: " + ex.Message);
+            } 
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEvent(int id)
         {
-            var eventItem = await _context.Events.FindAsync(id);
-            if (eventItem == null)
+            try
             {
-                return NotFound();
+                var deleted = await _eventDao.DeleteEvent(id);
+                if (!deleted)
+                {
+                    return NotFound();
+                }
+                return NoContent();
             }
-
-            _context.Events.Remove(eventItem);
-            await _context.SaveChangesAsync();
-
-            return eventItem;
+            catch (Exception ex)
+            {
+                // Log the error
+                return StatusCode(500, "An error occurred while processing your request: " + ex.Message);
+            }    
         }
         
         [HttpPut("{id}")]
@@ -99,34 +156,24 @@ namespace crm_minimal.Controllers
         {
             if (id != eventData.Id)
             {
-                return BadRequest("No such event exists.");
-                
+                return BadRequest();
             }
-
-            _context.Entry(eventData).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EventExists(id))
+                var updated = await _eventDao.UpdateEvent(eventData);
+                if (!updated)
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+                return NoContent();
             }
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                // Log the error
+                return StatusCode(500, "An error occurred while processing your request: " + ex.Message);
+            }
         }
 
-        private bool EventExists(int id)
-        {
-            return _context.Events.Any(e => e.Id == id);
-        }
     }
 }

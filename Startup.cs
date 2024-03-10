@@ -1,4 +1,5 @@
 using crm_minimal.Data;
+using crm_minimal.Data.Dao;
 using Microsoft.EntityFrameworkCore; 
 
 // ... other using statements
@@ -13,6 +14,10 @@ public class Startup
     {
         services.AddDbContext<ApplicationManagementContext>(options => 
             options.UseNpgsql(Configuration.GetConnectionString("EventManagementDb")));
+        
+        services.AddScoped<IEventDao, EventDao>(); 
+
+
 
         // ... other service registrations
     }

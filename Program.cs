@@ -1,4 +1,5 @@
 using crm_minimal.Data;
+using crm_minimal.Data.Dao;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ builder.Services.AddDbContext<ApplicationManagementContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
+builder.Services.AddScoped<IEventDao, EventDao>();  // Add this line
+
+
 
 var app = builder.Build();
 
