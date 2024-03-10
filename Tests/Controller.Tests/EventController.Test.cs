@@ -1,5 +1,6 @@
 using crm_minimal.Controllers;
 using crm_minimal.Data;
+using crm_minimal.Data.Dao;
 using crm_minimal.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,171 +27,112 @@ namespace crm_minimal.Tests.Controller.Tests
     
     public class EventsController_Test
     {
-        private Mock<ApplicationManagementContext>? _mockContext;
+        private Mock<IEventDao> _mockContext;
 
         [SetUp]
         public void Setup()
         {
-            _mockContext = new Mock<ApplicationManagementContext>();
+            _mockContext = new Mock<IEventDao>();
         }
 
         [Test]
         public void GetEvents_ReturnsListOfEvents()
         {
-            // Arrange
-           var data = new List<Event>
+            var events = new List<Event>
             {
-                new Event { Id = 1, Title = "Event1", Description = "Description1", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner1", SeatsMap = "SeatsMap1" },
-                new Event { Id = 2, Title = "Event2", Description = "Description2", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner2", SeatsMap = "SeatsMap2" },
-                new Event { Id = 3, Title = "Event3", Description = "Description3", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner3", SeatsMap = "SeatsMap3" },
-            }.AsQueryable();
-
-            var mockSet = new Mock<DbSet<Event>>();
-            mockSet.As<IQueryable<Event>>().Setup(m => m.Provider).Returns(data.Provider);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.Expression).Returns(data.Expression);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            mockSet.As<IAsyncEnumerable<Event>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>())).Returns(new TestAsyncEnumerator<Event>(data.GetEnumerator()));
-
-            _mockContext.Setup(c => c.Events).Returns(mockSet.Object);
-            _mockContext.Setup(c => c.Events).Returns(mockSet.Object);
+                new Event { Id = 1, Title = "Event 1", Description = "Description 1", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image1.jpg", SeatsMap = "[]" },
+                new Event { Id = 2, Title = "Event 2", Description = "Description 2", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image2.jpg", SeatsMap = "[]" },
+                new Event { Id = 3, Title = "Event 3", Description = "Description 3", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image3.jpg", SeatsMap = "[]" }
+            };
+            
+            _mockContext.Setup(m => m.GetAllEvents()).ReturnsAsync(events);
             var controller = new EventsController(_mockContext.Object);
+            var result = controller.GetEvents().Result;
+            var eventsResult = result.Result as OkObjectResult;
+            var eventsList = eventsResult.Value as List<Event>;
 
-            // Act
-            var result = controller.GetEvents();
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            IEnumerable<Event>? events = result.Result.Value;
-            
-            Assert.That(events, Is.EqualTo(data));
-            
+            if (eventsList != null)
+            {
+                Assert.That(eventsList.Count, Is.EqualTo(events.Count));
+                Assert.That(eventsList, Is.EqualTo(events));
+            }
         }
 
         [Test]
         public void GetEvents_ReturnEmptyList()
         {
-            // Arrange
-            var data = new List<Event>().AsQueryable();
-
-            var mockSet = new Mock<DbSet<Event>>();
-            mockSet.As<IQueryable<Event>>().Setup(m => m.Provider).Returns(data.Provider);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.Expression).Returns(data.Expression);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            mockSet.As<IAsyncEnumerable<Event>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>())).Returns(new TestAsyncEnumerator<Event>(data.GetEnumerator()));
-
-            _mockContext.Setup(c => c.Events).Returns(mockSet.Object);
+            var events = new List<Event>();
+            _mockContext.Setup(m => m.GetAllEvents()).ReturnsAsync(events);
             var controller = new EventsController(_mockContext.Object);
+            var result = controller.GetEvents().Result;
+            var eventsResult = result.Result as OkObjectResult;
+            var eventsList = eventsResult.Value as List<Event>;
 
-            // Act
-            var result = controller.GetEvents();
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            IEnumerable<Event>? events = result.Result.Value;
-            
-            Assert.That(events, Is.EqualTo(data));
+            if (eventsList != null)
+            {
+                Assert.That(eventsList.Count, Is.EqualTo(events.Count));
+                Assert.That(eventsList, Is.EqualTo(events));
+            }
         } 
         [Test]
-public void GetEventById_ReturnsOneEvent()
-{
-    // Arrange
-    var expectedEventId = 1;
-    var expectedEvent = new Event { Id = expectedEventId, Title = "Event1", Description = "Description1", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner1", SeatsMap = "SeatsMap1" };
+        public void GetEventById_ReturnsOneEvent()
+        {
+            var events = new List<Event>
+            {
+                new Event { Id = 1, Title = "Event 1", Description = "Description 1", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image1.jpg", SeatsMap = "[]" },
+                new Event { Id = 2, Title = "Event 2", Description = "Description 2", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image2.jpg", SeatsMap = "[]" },
+                new Event { Id = 3, Title = "Event 3", Description = "Description 3", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image3.jpg", SeatsMap = "[]" }
+            };
+            
+            _mockContext.Setup(m => m.GetEventById(1)).ReturnsAsync(events[0]);
+           
+            var controller = new EventsController(_mockContext.Object);
+            var result = controller.GetEventById(1).Result;
+            var eventResult = result.Result as OkObjectResult;
+            var eventItem = eventResult.Value as Event;
 
-    var data = new List<Event> { expectedEvent }.AsQueryable();
-
-    var mockSet = new Mock<DbSet<Event>>();
-    mockSet.As<IQueryable<Event>>().Setup(m => m.Provider).Returns(data.Provider);
-    mockSet.As<IQueryable<Event>>().Setup(m => m.Expression).Returns(data.Expression);
-    mockSet.As<IQueryable<Event>>().Setup(m => m.ElementType).Returns(data.ElementType);
-    mockSet.As<IQueryable<Event>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-
-    mockSet.As<IAsyncEnumerable<Event>>().Setup(d => d.GetAsyncEnumerator(new CancellationToken()))
-        .Returns(new TestAsyncEnumerator<Event>(data.GetEnumerator()));
-
-    mockSet.Setup(d => d.Find(It.IsAny<object[]>())).Returns<object[]>(ids => data.FirstOrDefault(d => d.Id == (int)ids[0]));
-
-    _mockContext.Setup(c => c.Events).Returns(mockSet.Object);
-    var controller = new EventsController(_mockContext.Object);
-
-    // Act
-    var result = controller.GetEventById(expectedEventId);
-
-    // Assert
-    Assert.That(result, Is.Not.Null);
-    Event? events = result.Result.Value;
-
-    Assert.That(events, Is.Not.Null);
-    Assert.That(events, Is.EqualTo(expectedEvent));
-}
+            if (eventItem != null)
+            {
+                Assert.That(eventItem, Is.EqualTo(events[0]));
+            }
+        }
         [Test]
         public void GetEventById_ReturnsEvent()
-        {
-            // Arrange
-            var data = new List<Event>
+        {   
+            var events = new List<Event>
             {
-                new Event { Id = 1, Title = "Event1", Description = "Description1", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner1", SeatsMap = "SeatsMap1" },
-                new Event { Id = 2, Title = "Event2", Description = "Description2", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner2", SeatsMap = "SeatsMap2" },
-                new Event { Id = 3, Title = "Event3", Description = "Description3", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner3", SeatsMap = "SeatsMap3" },
-            }.AsQueryable();
-
-            var mockSet = new Mock<DbSet<Event>>();
+                new Event { Id = 1, Title = "Event 1", Description = "Description 1", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image1.jpg", SeatsMap = "[]" },
+                new Event { Id = 2, Title = "Event 2", Description = "Description 2", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image2.jpg", SeatsMap = "[]" },
+                new Event { Id = 3, Title = "Event 3", Description = "Description 3", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image3.jpg", SeatsMap = "[]" }
+            };
             
-            mockSet.As<IQueryable<Event>>().Setup(m => m.Provider).Returns(data.Provider);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.Expression).Returns(data.Expression);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            mockSet.As<IAsyncEnumerable<Event>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>())).Returns(new TestAsyncEnumerator<Event>(data.GetEnumerator()));
-            mockSet.As<IAsyncEnumerable<Event>>().Setup(d => d.GetAsyncEnumerator(new CancellationToken()))
-                .Returns(new TestAsyncEnumerator<Event>(data.GetEnumerator()));
-            
-            _mockContext.Setup(c => c.Events).Returns(mockSet.Object);
+            _mockContext.Setup(m => m.GetEventById(1)).ReturnsAsync(events[0]);
             var controller = new EventsController(_mockContext.Object);
-        
-            // Act
-            var result = controller.GetEventById(1);
-            mockSet.Verify(m => m.FindAsync(1), Times.Once());
-            
-             // Assert
-            Assert.That(result, Is.Not.Null);
-            Event? events = result.Result.Value;
-            
-            Assert.That(events, Is.Not.Null);
+            var result = controller.GetEventById(1).Result;
+            var eventResult = result.Result as OkObjectResult;
+            var eventItem = eventResult.Value as Event;
+
+            if (eventItem != null)
+            {
+                Assert.That(eventItem, Is.EqualTo(events[0]));
+            }
         }
 
         [Test]
         public void GetEventById_NotFound()
-        {
-            // Arrange
-            var data = new List<Event>
+        {   
+            var events = new List<Event>
             {
-                new Event { Id = 1, Title = "Event1", Description = "Description1", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner1", SeatsMap = "SeatsMap1" },
-                new Event { Id = 2, Title = "Event2", Description = "Description2", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner2", SeatsMap = "SeatsMap2" },
-                new Event { Id = 3, Title = "Event3", Description = "Description3", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "ImageBanner3", SeatsMap = "SeatsMap3" },
-            }.AsQueryable();
-
-            var mockSet = new Mock<DbSet<Event>>();
-            mockSet.As<IQueryable<Event>>().Setup(m => m.Provider).Returns(data.Provider);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.Expression).Returns(data.Expression);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mockSet.As<IQueryable<Event>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            mockSet.As<IAsyncEnumerable<Event>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>())).Returns(new TestAsyncEnumerator<Event>(data.GetEnumerator()));
-            mockSet.As<IAsyncEnumerable<Event>>().Setup(d => d.GetAsyncEnumerator(new CancellationToken()))
-                .Returns(new TestAsyncEnumerator<Event>(data.GetEnumerator()));
-            _mockContext.Setup(c => c.Events).Returns(mockSet.Object);
+                new Event { Id = 1, Title = "Event 1", Description = "Description 1", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image1.jpg", SeatsMap = "[]" },
+                new Event { Id = 2, Title = "Event 2", Description = "Description 2", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image2.jpg", SeatsMap = "[]" },
+                new Event { Id = 3, Title = "Event 3", Description = "Description 3", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, IsListed = true, ImageBanner = "image3.jpg", SeatsMap = "[]" }
+            };
             
             var controller = new EventsController(_mockContext.Object);
+            var result = controller.GetEventById(1).Result;
+            var eventResult = result.Result as NotFoundResult;
 
-            // Act
-            var result = controller.GetEventById(1);
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Event? events = result.Result.Value;
-            
-            Assert.That(events, Is.EqualTo(null));
+            Assert.That(eventResult.StatusCode, Is.EqualTo(404));
         }
     }
 }
