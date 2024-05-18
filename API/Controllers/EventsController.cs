@@ -30,11 +30,6 @@ namespace crm_minimal.Controllers
         {
             var eventItem = await _eventService.GetEventByIdAsync(id);
 
-            if (eventItem == null)
-            {
-                return NotFound();
-            }
-
             return eventItem;
         }
 
