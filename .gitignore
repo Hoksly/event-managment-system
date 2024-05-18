@@ -1,0 +1,26 @@
+# Ignore build and output files
+*.suo
+*.csproj.user
+bin/
+obj/
+*.pdb
+
+# Ignore IDE-specific files
+**/.vscode/
+**/.idea/
+
+# Ignore test results
+**/testresults/
+
+# Ignore NuGet packages folder
+packages/
+
+# Ignore runtime configuration files
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+
+# Ignore local secrets or credentials
+Secrets/
+
+# Ignore any additional files or directories as needed
