@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using BLL.Services;
 using BLL.Models;
 using System.Threading.Tasks;
+using AutoMapper;
 using crm_minimal.DAL.Repositories;
 
 namespace crm_minimal.Controllers
@@ -11,12 +12,13 @@ namespace crm_minimal.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
-        
-        EventsController(IEventService eventService)
+        private readonly IMapper _mapper;
+
+        public EventsController(IEventService eventService, IMapper mapper)
         {
             _eventService = eventService;
+            _mapper = mapper;
         }
-        
         // GET: api/Events
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventBusinessModel>>> GetEvents()

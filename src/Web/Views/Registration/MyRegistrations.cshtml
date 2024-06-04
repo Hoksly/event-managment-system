@@ -1,0 +1,36 @@
+﻿@model List<EventViewModel>
+@{
+ViewData["Title"] = "My Events";
+}
+
+<div class="esh-events">
+    <div class="container">
+        <h1>@ViewData["Title"]</h1>
+        <article class="esh-events-titles row">
+            <section class="esh-events-title col-xs-3">Event Name</section>
+            <section class="esh-events-title col-xs-3">Date</section>
+            <section class="esh-events-title col-xs-3">Status</section>
+        </article>
+        @if (Model != null && Model.Any())
+        {
+        @for (int i = 0; i < Model.Count(); i++)
+        {
+        <article class="esh-events-items row">
+            <section class="esh-events-item col-xs-3">@Html.DisplayFor(modelItem => Model[i].Name)</section>
+            <section class="esh-events-item col-xs-3">@Html.DisplayFor(modelItem => Model[i].StartDate)</section>
+
+            <section class="esh-events-item col-xs-3">
+                @if (((List<bool>)ViewData["Status"])[i] == false)
+                {
+                <a asp-controller="Events" asp-action="Register" asp-route-id="@Model[i].Id" class="btn btn-primary mt-2">Details</a>
+                }
+                else
+                {
+                <a asp-controller="Events" asp-action="Register" asp-route-id="@Model[i].Id" class="btn  mt-2">Archived Event</a>
+                }
+            </section>
+        </article>
+        }
+        }
+    </div>
+</div>

@@ -6,10 +6,10 @@ namespace crm_minimal.DAL.Repositories
 {
     public interface ICustomerRepository
     {
-        Task<IEnumerable<Customer?>> GetAllCustomersAsync();
-        Task<Customer?> GetCustomerByIdAsync(int customerId);
-        Task AddCustomerAsync(Customer? customer);
-        Task UpdateCustomerAsync(Customer? customer);
+        Task<IEnumerable<RegisteredCustomer?>> GetAllCustomersAsync();
+        Task<RegisteredCustomer?> GetCustomerByIdAsync(int customerId);
+        Task AddCustomerAsync(RegisteredCustomer? customer);
+        Task UpdateCustomerAsync(RegisteredCustomer? customer);
         Task DeleteCustomerAsync(int customerId);
     }
 }

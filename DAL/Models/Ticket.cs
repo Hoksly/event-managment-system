@@ -16,7 +16,7 @@ namespace crm_minimal.Models
         [ForeignKey("Customer")]
         public int IdCustomer { get; set; }
 
-        public Customer Customer { get; set; }
+        public RegisteredCustomer Customer { get; set; }
 
         public string SeatInfo { get; set; }
     }

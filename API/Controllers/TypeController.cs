@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace crm_minimal.Controllers
@@ -6,6 +7,6 @@ namespace crm_minimal.Controllers
     [ApiController]
     public class TypeController : ControllerBase
     {
-        
+        private readonly IMapper _mapper;
     }
 }

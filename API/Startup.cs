@@ -1,4 +1,6 @@
+using AutoMapper;
 using BLL.Services;
+using BLL.Utils;
 using crm_minimal.DAL.Repositories;
 using crm_minimal.Data;
 using Microsoft.EntityFrameworkCore; 
@@ -28,7 +30,10 @@ public class Startup
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IEventRepository, EventRepository>();
+        
         services.AddScoped<IEventService, EventService>();
+        services.AddAutoMapper(typeof(EventProfile));
+
 
 
 

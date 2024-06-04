@@ -15,23 +15,23 @@ namespace crm_minimal.DAL.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Customer?>> GetAllCustomersAsync()
+        public async Task<IEnumerable<RegisteredCustomer?>> GetAllCustomersAsync()
         {
             return await _context.Customers.ToListAsync();
         }
 
-        public async Task<Customer?> GetCustomerByIdAsync(int customerId)
+        public async Task<RegisteredCustomer?> GetCustomerByIdAsync(int customerId)
         {
             return await _context.Customers.FindAsync(customerId);
         }
 
-        public async Task AddCustomerAsync(Customer? customer)
+        public async Task AddCustomerAsync(RegisteredCustomer? customer)
         {
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateCustomerAsync(Customer? customer)
+        public async Task UpdateCustomerAsync(RegisteredCustomer? customer)
         {
             _context.Customers.Update(customer);
             await _context.SaveChangesAsync();

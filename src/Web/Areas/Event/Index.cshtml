@@ -1,0 +1,26 @@
+
+@model Microsoft.eShopWeb.Web.ViewModels.EventViewModel
+
+
+<div class="container">
+    <h1 class="display-4">@Model.Name</h1>
+    <p class="lead">@Model.Description</p>
+
+    <h2 class="mt-4">Event Types</h2>
+
+    <h2 class="mt-4">Location</h2>
+  
+
+    <h2 class="mt-4">Starts at</h2>
+    <p>@Model.StartDate.ToString("g")</p>
+    
+    <h2 class="mt-4">Ends at</h2>
+    <p>@Model.EndDate.ToString("g")</p>
+
+
+    <a asp-page="/Index" class="btn btn-primary mt-4">Back to Events</a>
+
+    <div class="mt-4">
+        <a href="https://translate.google.com/" target="_blank" class="btn btn-secondary">Translate this page</a>
+    </div>
+</div>

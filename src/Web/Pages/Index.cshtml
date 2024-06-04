@@ -1,0 +1,93 @@
+﻿@page
+@{
+    ViewData["Title"] = "Home";
+    @model IndexModel
+}
+
+<head>
+    <!-- Other head elements... -->
+
+    <style>
+        .form-inline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .esh-catalog-send {
+            align-self: flex-end;
+            margin-top: -10px; /* Adjust this value as needed */
+        }
+        .esh-catalog-filters * {
+           /* Adjust as needed */
+            padding-top: 5px; /* Adjust as needed */
+        }
+    </style>
+</head>
+
+
+<section class="esh-catalog-filters">
+    <div class="container">
+
+        <form method="get" class="form-inline">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle navigation-btn" type="button" id="locationsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Locations
+                </button>
+                <div class="dropdown-menu" aria-labelledby="locationsDropdown">
+                    @for (var i = 0; i < Model.CatalogModel.Locations?.Count; i++)
+                    {
+                    <label class="dropdown-item">
+                        <input type="checkbox" asp-for="@Model.CatalogModel.Locations[i].Selected" />
+                        <input type="hidden" name="CatalogModel.Locations[@i].Id" value="@Model.CatalogModel.Locations[i].Id" />
+                        <input type="hidden" name="CatalogModel.Locations[@i].Name" value="@Model.CatalogModel.Locations[i].Name" />
+                        @Model.CatalogModel.Locations[i].Name
+                    </label>
+                    }
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="typesDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Types
+                </button>
+                <div class="dropdown-menu" aria-labelledby="typesDropdown">
+                    @for (var i = 0; i < Model.CatalogModel.Types?.Count; i++)
+                    {   
+                    <label class="dropdown-item">
+                        <input type="checkbox" asp-for="@Model.CatalogModel.Types[i].Selected" />
+                        <input type="hidden" name="CatalogModel.Types[@i].Id" value="@Model.CatalogModel.Types[i].Id" />
+                        <input type="hidden" name="CatalogModel.Types[@i].Name" value="@Model.CatalogModel.Types[i].Name" />
+                        @Model.CatalogModel.Types[i].Name
+                    </label>
+                    }
+                </div>
+            </div>
+
+            <input class="esh-catalog-send" type="image" src="~/images/arrow-right.svg" />
+        </form>
+    </div>
+</section>
+
+<div class="container">
+    @if (Model.CatalogModel.Events.Any())
+    {
+        <partial name="_pagination" for="CatalogModel.PaginationInfo" />
+
+        <div class="esh-catalog-items row">
+            @foreach (var eventView in Model.CatalogModel.Events)
+            {
+                <div class="esh-catalog-item col-md-4">
+                    <partial name="Shared/_event" for="@eventView" />
+                </div>
+            }
+        </div>
+        <partial name="_pagination" for="CatalogModel.PaginationInfo" />
+    }
+    else
+    {
+        <div class="esh-catalog-items row">
+            THERE ARE NO RESULTS THAT MATCH YOUR SEARCH
+        </div>
+    }
+</div>
